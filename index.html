@@ -276,31 +276,70 @@
             flex-shrink: 0;
             width: 0;
             height: 100vh;
-            background: rgba(15, 23, 42, 0.97);
-            backdrop-filter: blur(16px);
+            background: var(--panel-bg);
+            backdrop-filter: blur(20px);
             display: flex;
             flex-direction: column;
             overflow: hidden;
             transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             min-width: 0;
+            border-right: 1px solid var(--border);
         }
 
         #editor-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 14px 16px;
+            padding: 10px 16px;
             border-bottom: 1px solid var(--border);
             flex-shrink: 0;
         }
 
         #editor-header span {
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 11px;
+            font-weight: 700;
             color: var(--text-main);
-            letter-spacing: 0.04em;
-            opacity: 0.7;
+            letter-spacing: 0.1em;
+            opacity: 0.5;
             text-transform: uppercase;
+        }
+
+        .editor-controls {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .editor-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-main);
+            padding: 6px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.6;
+        }
+
+        .editor-btn:hover {
+            opacity: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--border);
+        }
+
+        .editor-btn.active {
+            opacity: 1;
+            color: var(--accent);
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.2);
+        }
+
+        .editor-btn svg {
+            width: 15px;
+            height: 15px;
         }
 
         #editor-status {
@@ -342,7 +381,8 @@
         }
 
         #mmd-textarea::placeholder {
-            color: rgba(255, 255, 255, 0.2);
+            color: var(--text-main);
+            opacity: 0.3;
         }
 
         #mmd-textarea::-webkit-scrollbar {
@@ -354,22 +394,23 @@
         }
 
         #mmd-textarea::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--border);
             border-radius: 2px;
         }
 
         #editor-footer {
-            padding: 10px 16px;
+            padding: 12px 16px;
             border-top: 1px solid var(--border);
             display: flex;
-            flex-direction: column;
-            gap: 8px;
+            align-items: center;
+            gap: 12px;
             flex-shrink: 0;
         }
 
         #editor-footer-btns {
             display: flex;
-            gap: 8px;
+            gap: 6px;
+            flex: 1;
         }
 
         #btn-render {
@@ -377,11 +418,11 @@
             background: var(--accent);
             border: none;
             color: white;
-            padding: 8px 16px;
-            border-radius: 8px;
+            padding: 7px 14px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
+            font-size: 12px;
+            font-weight: 600;
             transition: background 0.2s;
         }
 
@@ -424,7 +465,7 @@
         #line-number-gutter {
             width: 44px;
             flex-shrink: 0;
-            background: rgba(0, 0, 0, 0.25);
+            background: rgba(0, 0, 0, 0.1);
             border-right: 1px solid var(--border);
             overflow: hidden;
             user-select: none;
@@ -433,7 +474,8 @@
             line-height: 1.7;
             padding-top: 16px;
             padding-bottom: 16px;
-            color: rgba(255, 255, 255, 0.2);
+            color: var(--text-main);
+            opacity: 0.3;
             text-align: right;
         }
 
@@ -718,14 +760,21 @@
                         <i data-lucide="keyboard" class="menu-icon"></i> Keyboard Shortcuts
                     </button>
                     <div class="menu-divider"></div>
-                    <a href="https://github.com/swas02/Drishyam" target="_blank" class="menu-item"
-                        style="text-decoration:none;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="menu-icon">
-                            <path
-                                d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                        </svg>
-                        View Source
-                    </a>
+                    <button class="menu-item" id="menu-update" style="display:none;color:var(--accent);" onclick="app.applyUpdate()">
+                        <i data-lucide="sparkles" class="menu-icon" style="color:var(--accent);opacity:1;"></i> Update Available!
+                    </button>
+                    <button class="menu-item" onclick="app.checkForUpdates(event)">
+                        <i data-lucide="refresh-cw" class="menu-icon"></i> Check for Updates
+                    </button>
+                    <div class="menu-divider"></div>
+                    <button class="menu-item" onclick="app.clearCanvas()" style="color:#f87171;">
+                        <i data-lucide="trash-2" class="menu-icon" style="color:#f87171;opacity:1;"></i> Clear Canvas
+                    </button>
+                    <div class="menu-divider"></div>
+                    <div style="padding: 4px 12px; font-size: 10px; opacity: 0.4; display: flex; justify-content: space-between; align-items: center;">
+                        <span id="app-version">v...</span>
+                        <a href="https://github.com/swas02/Drishyam/releases" target="_blank" style="color: inherit; text-decoration: none;">Changelog</a>
+                    </div>
                 </div>
             </div>
             <input type="file" id="fileInput" accept=".svg,.mmd,.mermaid,.txt" hidden />
@@ -745,10 +794,17 @@
         <div id="editor-panel">
             <div id="editor-header">
                 <span>Mermaid Editor</span>
-                <div style="display:flex;align-items:center;gap:5px;">
-                    <button class="editor-icon-btn" onclick="app.adjustFontSize(-1)">A-</button>
-                    <button class="editor-icon-btn" onclick="app.adjustFontSize(1)">A+</button>
-                    <button id="btn-wrap-toggle" onclick="app.toggleWrap()">wrap</button>
+                <div class="editor-controls">
+                    <button class="editor-btn" onclick="app.adjustFontSize(1)" title="Increase Font Size">
+                        <i data-lucide="zoom-in"></i>
+                    </button>
+                    <button class="editor-btn" onclick="app.adjustFontSize(-1)" title="Decrease Font Size">
+                        <i data-lucide="zoom-out"></i>
+                    </button>
+                    <button id="btn-wrap-toggle" class="editor-btn" onclick="app.toggleWrap()" title="Toggle Line Wrap">
+                        <i data-lucide="wrap-text"></i>
+                    </button>
+                    <div class="divider" style="height:16px;margin:0 4px;"></div>
                     <span id="editor-status">ready</span>
                 </div>
             </div>
@@ -769,7 +825,6 @@
                     <button id="btn-render" onclick="app.renderFromEditor()">▶ Render</button>
                     <button id="btn-clear" onclick="app.clearEditor()">Clear</button>
                 </div>
-                <span id="editor-stats">L1 C1</span>
             </div>
         </div>
 
@@ -951,16 +1006,6 @@
                 gutter.scrollTop = ta.scrollTop;
             },
 
-            updateStats() {
-                const ta = document.getElementById("mmd-textarea");
-                const val = ta.value;
-                const before = val.substring(0, ta.selectionStart);
-                const curLine = (before.match(/\n/g) || []).length + 1;
-                const curCol = before.length - before.lastIndexOf("\n");
-                const stats = document.getElementById("editor-stats");
-                if (stats) stats.textContent = `L${curLine} C${curCol} | ${val.length} ch`;
-            },
-
             toggleWrap() {
                 const ta = document.getElementById("mmd-textarea");
                 const btn = document.getElementById("btn-wrap-toggle");
@@ -987,10 +1032,8 @@
                     clearTimeout(this._editorDebounce);
                     this._editorDebounce = setTimeout(() => this.renderFromEditor(), 800);
                 };
-                ta.addEventListener("input", () => { this.updateLineNumbers(); this.updateStats(); triggerDebounce(); });
+                ta.addEventListener("input", () => { this.updateLineNumbers(); triggerDebounce(); });
                 ta.addEventListener("scroll", () => { document.getElementById("line-number-gutter").scrollTop = ta.scrollTop; });
-                ta.addEventListener("click", () => this.updateStats());
-                ta.addEventListener("keyup", () => this.updateStats());
                 ta.addEventListener("keydown", e => {
                     if (e.key === "Tab") {
                         e.preventDefault();
@@ -1003,14 +1046,36 @@
                 });
             },
 
+            updateTheme(color) {
+                const root = document.documentElement;
+                root.style.setProperty('--bg-primary', color);
+                
+                // Calculate luminance to determine text/UI contrast
+                const hex = color.replace('#', '');
+                const r = parseInt(hex.substr(0, 2), 16);
+                const g = parseInt(hex.substr(2, 2), 16);
+                const b = parseInt(hex.substr(4, 2), 16);
+                const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+                
+                const textColor = luminance > 0.5 ? '#0f172a' : '#f1f5f9';
+                const borderColor = luminance > 0.5 ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)';
+                const panelBg = luminance > 0.5 ? 'rgba(255,255,255,0.85)' : 'rgba(30, 41, 59, 0.85)';
+
+                root.style.setProperty('--text-main', textColor);
+                root.style.setProperty('--border', borderColor);
+                root.style.setProperty('--panel-bg', panelBg);
+
+                document.getElementById("bgColorPicker").value = color;
+                document.getElementById("color-swatch").style.background = color;
+                localStorage.setItem("drishyam-bg", color);
+
+                if (this.state.hasContent) this.standardizeInternalSvg();
+            },
+
             setupEventListeners() {
                 const fileInput = document.getElementById("fileInput");
                 fileInput.addEventListener("change", e => { if (e.target.files[0]) this.handleFile(e.target.files[0]); e.target.value = ""; });
-                document.getElementById("bgColorPicker").addEventListener("input", e => {
-                    const c = e.target.value; document.body.style.background = c;
-                    document.getElementById("color-swatch").style.background = c;
-                    localStorage.setItem("drishyam-bg", c);
-                });
+                document.getElementById("bgColorPicker").addEventListener("input", e => this.updateTheme(e.target.value));
                 window.addEventListener("dragover", e => { e.preventDefault(); document.getElementById("drop-overlay").style.display = "flex"; });
                 window.addEventListener("dragleave", e => { if (e.relatedTarget === null) document.getElementById("drop-overlay").style.display = "none"; });
                 window.addEventListener("drop", e => { e.preventDefault(); document.getElementById("drop-overlay").style.display = "none"; if (e.dataTransfer.files.length) this.handleFile(e.dataTransfer.files[0]); });
@@ -1114,10 +1179,63 @@
             },
 
             resetZoom() { this.state.container.transition().duration(500).call(this.state.zoom.transform, d3.zoomIdentity); },
-            clearCanvas() { this.state.canvas.selectAll("*").remove(); this.setHasContent(false); },
+            clearCanvas() {
+                this.state.canvas.selectAll("*").remove();
+                this.setHasContent(false);
+                document.getElementById("more-menu").classList.remove("open");
+                this.showToast("Canvas cleared");
+            },
+
+            clearEditor() {
+                document.getElementById("mmd-textarea").value = "";
+                this.updateLineNumbers();
+                this.setEditorStatus("ok", "cleared");
+            },
 
             setupPWA() {
-                if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js");
+                if (!("serviceWorker" in navigator)) return;
+                
+                navigator.serviceWorker.register("./sw.js").then(reg => {
+                    this._swRegistration = reg;
+                    
+                    // Request version from Service Worker
+                    const channel = new MessageChannel();
+                    channel.port1.onmessage = (e) => {
+                        const vSpan = document.getElementById("app-version");
+                        if (vSpan) vSpan.textContent = "v" + e.data;
+                    };
+                    if (reg.active) {
+                        reg.active.postMessage("GET_VERSION", [channel.port2]);
+                    } else {
+                        // Fallback if not active yet
+                        reg.addEventListener('updatefound', () => {
+                            const newWorker = reg.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'activated') newWorker.postMessage("GET_VERSION", [channel.port2]);
+                            });
+                        });
+                    }
+
+                    // Check for waiting service worker on load
+                    if (reg.waiting) this.showUpdateAvailable(reg.waiting);
+
+                    // Listen for new service worker installation
+                    reg.addEventListener("updatefound", () => {
+                        const newWorker = reg.installing;
+                        newWorker.addEventListener("statechange", () => {
+                            if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+                                this.showUpdateAvailable(newWorker);
+                            }
+                        });
+                    });
+                });
+
+                // Listen for controller change to reload page
+                let refreshing = false;
+                navigator.serviceWorker.addEventListener("controllerchange", () => {
+                    if (!refreshing) { refreshing = true; window.location.reload(); }
+                });
+
                 window.addEventListener("beforeinstallprompt", e => {
                     e.preventDefault(); this._installPrompt = e;
                     document.getElementById("menu-install").style.display = "flex";
@@ -1128,6 +1246,42 @@
                     document.getElementById("menu-install").style.display = "none";
                     document.getElementById("install-divider").style.display = "none";
                 });
+            },
+
+            showUpdateAvailable(worker) {
+                this._newWorker = worker;
+                document.getElementById("menu-update").style.display = "flex";
+                this.showToast("Update available! Check the menu.", "info");
+            },
+
+            async checkForUpdates() {
+                if (!this._swRegistration) {
+                    this.showToast("PWA not registered", "error");
+                    return;
+                }
+                const btn = event.currentTarget;
+                const icon = btn.querySelector(".menu-icon");
+                if (icon) icon.style.animation = "rotate 2s linear infinite";
+                
+                this.showToast("Checking for updates...");
+                try {
+                    await this._swRegistration.update();
+                    // Small delay to let 'updatefound' fire if there is an update
+                    setTimeout(() => {
+                        if (icon) icon.style.animation = "";
+                        if (!this._newWorker) this.showToast("App is up to date");
+                    }, 1000);
+                } catch (e) {
+                    if (icon) icon.style.animation = "";
+                    this.showToast("Check failed", "error");
+                }
+            },
+
+            applyUpdate() {
+                if (this._newWorker) {
+                    this.showToast("Applying update...");
+                    this._newWorker.postMessage("SKIP_WAITING");
+                }
             },
 
             toggleMoreMenu() {
@@ -1182,9 +1336,7 @@
 
             loadSettings() {
                 const savedBg = localStorage.getItem("drishyam-bg") || "#0f172a";
-                document.body.style.background = savedBg;
-                document.getElementById("bgColorPicker").value = savedBg;
-                document.getElementById("color-swatch").style.background = savedBg;
+                this.updateTheme(savedBg);
                 const savedSize = parseInt(localStorage.getItem("drishyam-font-size")) || 13;
                 if (savedSize !== 13) {
                     document.getElementById("mmd-textarea").style.fontSize = savedSize + "px";

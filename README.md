@@ -93,6 +93,19 @@ drishyam/
 
 ---
 
+## 🛠 Developer Guide
+
+### Releasing Updates
+Dṛśyam uses a centralized versioning system managed by the Service Worker. To push an update to all installed PWA instances:
+
+1.  Open `sw.js`.
+2.  Update the `VERSION` constant at the top of the file using the **Evergreen** format (`YY.M.U`), e.g., `const VERSION = "26.5.2";`.
+3.  Deploy the changes.
+
+The app will automatically detect the change, notify users with a "Update Available" toast, and show an update button in the **More** menu. The UI version indicator and cache management are all driven by this single variable.
+
+---
+
 ## 📄 License
 
 Distributed under the **MIT License**. See `LICENSE` for more information.
