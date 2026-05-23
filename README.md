@@ -13,7 +13,7 @@
 **Dṛśyam** (Sanskrit: *दृश्यम्*) — A zero-dependency, ultra-lightweight diagram viewer. 
 Drop any file and explore it with smooth infinite pan, zoom, and high-resolution export.
 
-[View Demo](https://drishyam.app/) • [Report Bug](https://github.com/your-username/drishyam/issues) • [Request Feature](https://github.com/your-username/drishyam/issues)
+[View Demo](https://swas02.github.io/Drishyam/) • [Report Bug](https://github.com/swas02/Drishyam/issues) • [Request Feature](https://github.com/swas02/Drishyam/issues)
 
 </div>
 
