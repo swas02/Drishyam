@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dṛśyam | SVG & Mermaid Diagram Viewer</title>
+
+    <!-- SEO -->
+    <meta name="description" content="Dṛśyam — a beautiful SVG and Mermaid diagram viewer with pan, zoom, and export. Drop any diagram file and explore it instantly." />
+    <meta name="keywords" content="SVG viewer, Mermaid diagram, diagram viewer, architecture diagram, flowchart, D3 zoom" />
+    <meta name="author" content="Dṛśyam" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://drishyam.app/" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Dṛśyam | SVG & Mermaid Diagram Viewer" />
+    <meta property="og:description" content="Drop any SVG or Mermaid file and explore it with smooth pan, zoom, and export." />
+    <meta property="og:url" content="https://drishyam.app/" />
+    <meta property="og:image" content="https://drishyam.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Dṛśyam" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Dṛśyam | SVG & Mermaid Diagram Viewer" />
+    <meta name="twitter:description" content="Drop any SVG or Mermaid file and explore it with smooth pan, zoom, and export." />
+    <meta name="twitter:image" content="https://drishyam.app/og-image.png" />
+
+    <!-- PWA -->
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="application-name" content="Dṛśyam" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="icon.svg" />
+    <link rel="apple-touch-icon" href="appstore-images/ios/180.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="appstore-images/ios/32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="appstore-images/ios/16.png" />
+
+    <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --panel-bg: rgba(30, 41, 59, 0.8);
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-main: #f1f5f9;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body,
+        html {
+            margin: 0;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        /* --- UI Layer --- */
+        #ui-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .glass-panel {
+            pointer-events: auto;
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        #toolbar {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .divider {
+            width: 1px;
+            height: 24px;
+            background: var(--border);
+            margin: 0 4px;
+        }
+
+        /* --- More Menu --- */
+        #more-wrap {
+            position: relative;
+            pointer-events: auto;
+        }
+        #more-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 12px);
+            right: 0;
+            min-width: 200px;
+            padding: 6px;
+            z-index: 200;
+            flex-direction: column;
+            gap: 2px;
+        }
+        #more-menu.open { display: flex; }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 13px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.15s;
+        }
+        .menu-item:hover { background: rgba(255, 255, 255, 0.08); }
+        .menu-icon { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.7; }
+        .menu-divider { height: 1px; background: var(--border); margin: 6px 0; }
+
+        /* --- Split Layout --- */
+        #app-layout {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- Viewer Area --- */
+        #viewer-wrap {
+            position: relative;
+            flex: 1;
+            min-width: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #viewer-container {
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+
+        #viewer-container:active {
+            cursor: grabbing;
+        }
+
+        #resize-handle {
+            width: 0;
+            height: 100vh;
+            flex-shrink: 0;
+            background: var(--border);
+            cursor: col-resize;
+            transition: width 0.3s cubic-bezier(0.4,0,0.2,1), background 0.15s;
+            position: relative;
+            z-index: 95;
+        }
+        #resize-handle.visible { width: 5px; }
+        #resize-handle:hover, #resize-handle.dragging { background: var(--accent); }
+
+        /* --- Status/Feedback --- */
+        #drop-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(59, 130, 246, 0.1);
+            border: 4px dashed var(--accent);
+            display: none;
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        #loader {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            background: var(--panel-bg);
+            padding: 12px 20px;
+            border-radius: 50px;
+        }
+
+        .spinner {
+            animation: rotate 2s linear infinite;
+            width: 18px;
+            height: 18px;
+        }
+
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
+
+        /* --- Editor Panel --- */
+        #editor-panel {
+            flex-shrink: 0;
+            width: 0;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.97);
+            backdrop-filter: blur(16px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 0;
+        }
+
+        #editor-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        #editor-header span {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+            letter-spacing: 0.04em;
+            opacity: 0.7;
+            text-transform: uppercase;
+        }
+        #editor-status {
+            font-size: 11px;
+            font-weight: 500;
+            padding: 2px 8px;
+            border-radius: 20px;
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            transition: all 0.2s;
+        }
+        #editor-status.error { background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.2); }
+        #editor-status.pending { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border-color: rgba(251, 191, 36, 0.2); }
+
+        #mmd-textarea {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            padding: 16px;
+            resize: none;
+            tab-size: 2;
+            overflow-y: auto;
+        }
+        #mmd-textarea::placeholder { color: rgba(255,255,255,0.2); }
+        #mmd-textarea::-webkit-scrollbar { width: 4px; }
+        #mmd-textarea::-webkit-scrollbar-track { background: transparent; }
+        #mmd-textarea::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+        #editor-footer {
+            padding: 10px 16px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        #editor-footer-btns { display: flex; gap: 8px; }
+        #btn-render {
+            flex: 1;
+            background: var(--accent);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        #btn-render:hover { background: var(--accent-hover); }
+        #btn-clear {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+        #btn-clear:hover { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.3); color: #f87171; }
+
+        /* --- Line Numbers & Lint --- */
+        #editor-body { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+        #editor-code-wrap { flex:1; display:flex; overflow:hidden; min-height:0; }
+        #line-number-gutter { width:44px; flex-shrink:0; background:rgba(0,0,0,0.25); border-right:1px solid var(--border); overflow:hidden; user-select:none; font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.7; padding-top:16px; padding-bottom:16px; color:rgba(255,255,255,0.2); text-align:right; }
+        .ln-item { padding:0 8px 0 4px; }
+        .ln-item.ln-err { color:#f87171; background:rgba(239,68,68,0.1); border-right:2px solid rgba(239,68,68,0.4); padding-right:6px; }
+        #lint-errors { flex-shrink:0; max-height:140px; overflow-y:auto; border-top:1px solid var(--border); border-bottom:1px solid var(--border); background:rgba(0,0,0,0.3); display:none; }
+
+        /* --- Extras --- */
+        * { box-sizing: border-box; }
+        .btn:active { transform: scale(0.95); }
+        #zoom-badge { font-size: 12px; font-weight: 600; color: var(--text-main); min-width: 44px; text-align: center; opacity: 0.8; letter-spacing: 0.02em; }
+        #empty-state { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; pointer-events: none; color: rgba(255,255,255,0.25); user-select: none; }
+        #empty-state svg { opacity: 0.2; }
+        #empty-state h2 { margin: 0; font-size: 18px; font-weight: 500; }
+        #empty-state p { margin: 0; font-size: 13px; }
+        #empty-state kbd { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; padding: 1px 6px; font-size: 11px; font-family: monospace; }
+        #toast-container { position: fixed; bottom: 80px; right: 24px; display: flex; flex-direction: column; gap: 8px; z-index: 9999; pointer-events: none; }
+        .toast { background: rgba(30,41,59,0.95); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; font-size: 13px; color: var(--text-main); backdrop-filter: blur(12px); animation: slideIn 0.2s ease; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
+        .toast.error { border-color: #ef4444; color: #fca5a5; }
+        @keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+        #logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+        #logo-wordmark { font-size: 14px; font-weight: 600; color: var(--text-main); letter-spacing: 0.04em; white-space: nowrap; }
+
+        /* --- Shortcuts Modal --- */
+        #shortcuts-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 300; align-items: center; justify-content: center; }
+        #shortcuts-modal.open { display: flex; }
+        #shortcuts-box { background: #1e293b; border: 1px solid var(--border); border-radius: 14px; padding: 24px; min-width: 320px; box-shadow: 0 24px 64px rgba(0,0,0,0.6); }
+        #shortcuts-box h3 { margin: 0 0 16px; font-size: 15px; font-weight: 600; }
+        .shortcut-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; color: rgba(255,255,255,0.7); }
+        .shortcut-row:last-child { border-bottom: none; }
+        .shortcut-keys kbd { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; padding: 2px 7px; font-size: 11px; font-family: monospace; color: var(--text-main); }
+        #shortcuts-close { margin-top: 16px; width: 100%; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text-main); border-radius: 8px; cursor: pointer; font-size: 13px; }
+        #shortcuts-close:hover { background: rgba(255,255,255,0.1); }
+
+    </style>
+</head>
+
+<body>
+
+    <div id="ui-layer">
+        <div id="toolbar" class="glass-panel">
+            <!-- Logo -->
+            <a href="/" id="logo" title="Dṛśyam">
+                <img src="icon.svg" alt="Dṛśyam Logo" width="30" height="30">
+                <span id="logo-wordmark">Dṛśyam</span>
+            </a>
+
+            <div class="divider"></div>
+
+            <button class="btn" id="btn-toggle-editor" onclick="app.toggleEditor()" title="Toggle MMD Editor (E)">
+                <i data-lucide="code-2"></i>
+            </button>
+
+            <div class="divider"></div>
+
+            <button class="btn" onclick="app.zoomOut()" title="Zoom Out (-)">
+                <i data-lucide="minus"></i>
+            </button>
+            <span id="zoom-badge">100%</span>
+            <button class="btn" onclick="app.zoomIn()" title="Zoom In (+)">
+                <i data-lucide="plus"></i>
+            </button>
+
+            <div class="divider"></div>
+
+            <button class="btn" onclick="app.resetZoom()" title="Reset Zoom (R)">
+                <i data-lucide="refresh-cw"></i>
+            </button>
+            <button class="btn" onclick="app.fitToScreen()" title="Fit to Screen (F)">
+                <i data-lucide="maximize"></i>
+            </button>
+
+            <div class="divider"></div>
+
+            <button class="btn" id="btn-bg-color" onclick="document.getElementById('bgColorPicker').click()" title="Change Background Color" style="padding:6px 8px;gap:6px;font-size:12px;font-weight:500;">
+                <span id="color-swatch" style="width:14px;height:14px;border-radius:3px;border:1px solid rgba(255,255,255,0.25);flex-shrink:0;"></span>
+                BG
+            </button>
+            <input type="color" id="bgColorPicker" hidden />
+
+            <div class="divider"></div>
+
+            <!-- Consolidated More Menu (Only entry for non-viewing actions) -->
+            <div id="more-wrap">
+                <button class="btn" id="btn-more" onclick="app.toggleMoreMenu()" title="More options">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+                    </svg>
+                </button>
+                <div id="more-menu" class="glass-panel">
+                    <button class="menu-item" onclick="document.getElementById('fileInput').click()">
+                        <i data-lucide="upload-cloud" class="menu-icon"></i> Open File
+                    </button>
+                    <div class="menu-divider"></div>
+                    <button class="menu-item" id="menu-install" style="display:none" onclick="app.installPWA()">
+                        <i data-lucide="download" class="menu-icon"></i> Install as App
+                    </button>
+                    <div class="menu-divider" id="install-divider" style="display:none"></div>
+                    <!-- <button class="menu-item" onclick="app.exportSVG()">
+                        <i data-lucide="file-output" class="menu-icon"></i> Export as SVG
+                    </button>
+                    <button class="menu-item" onclick="app.exportPNG()">
+                        <i data-lucide="image" class="menu-icon"></i> Export as PNG
+                    </button> -->
+                    <!-- <div class="menu-divider"></div> -->
+                    <button class="menu-item" onclick="app.showShortcuts()">
+                        <i data-lucide="keyboard" class="menu-icon"></i> Keyboard Shortcuts
+                    </button>
+                    <div class="menu-divider"></div>
+                    <a href="https://github.com/swas02/Drishyam" target="_blank" class="menu-item" style="text-decoration:none;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="menu-icon">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                        View Source
+                    </a>
+                </div>
+            </div>
+            <input type="file" id="fileInput" accept=".svg,.mmd,.mermaid,.txt" hidden />
+
+        </div>
+
+        <div id="loader" class="glass-panel">
+            <svg class="spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+            </svg>
+            <span>Processing Diagram...</span>
+        </div>
+    </div>
+
+    <div id="app-layout">
+        <!-- MMD Editor Panel -->
+        <div id="editor-panel">
+            <div id="editor-header">
+                <span>Mermaid Editor</span>
+                <div style="display:flex;align-items:center;gap:5px;">
+                    <button class="editor-icon-btn" onclick="app.adjustFontSize(-1)">A-</button>
+                    <button class="editor-icon-btn" onclick="app.adjustFontSize(1)">A+</button>
+                    <button id="btn-wrap-toggle" onclick="app.toggleWrap()">wrap</button>
+                    <span id="editor-status">ready</span>
+                </div>
+            </div>
+            <div id="editor-body">
+                <div id="editor-code-wrap">
+                    <div id="line-number-gutter"></div>
+                    <textarea id="mmd-textarea" spellcheck="false" placeholder="graph TD
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Do it]
+    B -->|No| D[Skip]
+    C --> E[End]
+    D --> E"></textarea>
+                </div>
+            </div>
+            <div id="lint-errors"></div>
+            <div id="editor-footer">
+                <div id="editor-footer-btns">
+                    <button id="btn-render" onclick="app.renderFromEditor()">▶ Render</button>
+                    <button id="btn-clear" onclick="app.clearEditor()">Clear</button>
+                </div>
+                <span id="editor-stats">L1 C1</span>
+            </div>
+        </div>
+
+        <div id="resize-handle"></div>
+        <div id="viewer-wrap">
+            <svg id="viewer-container"></svg>
+            <div id="empty-state">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                    <rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 10h8M8 14h5"/>
+                </svg>
+                <h2>Drop a diagram here</h2>
+                <p>Supports <strong>.svg</strong>, <strong>.mmd</strong>, <strong>.mermaid</strong>, <strong>.txt</strong></p>
+                <p style="margin-top:4px;font-size:12px;">
+                    <kbd>F</kbd> fit &nbsp; <kbd>R</kbd> reset &nbsp; <kbd>+</kbd>/<kbd>-</kbd> zoom
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div id="drop-overlay">
+        <h2 style="color: var(--accent)">Drop to Import</h2>
+    </div>
+
+    <!-- Toast container -->
+    <div id="toast-container"></div>
+
+    <!-- Keyboard Shortcuts Modal -->
+    <div id="shortcuts-modal" onclick="if(event.target===this)app.showShortcuts(false)">
+        <div id="shortcuts-box">
+            <h3>Keyboard Shortcuts</h3>
+            <div class="shortcut-row"><span>Fit to screen</span><span class="shortcut-keys"><kbd>F</kbd></span></div>
+            <div class="shortcut-row"><span>Reset zoom</span><span class="shortcut-keys"><kbd>R</kbd></span></div>
+            <div class="shortcut-row"><span>Zoom in / out</span><span class="shortcut-keys"><kbd>+</kbd><kbd>-</kbd></span></div>
+            <div class="shortcut-row"><span>Toggle editor</span><span class="shortcut-keys"><kbd>E</kbd></span></div>
+            <div class="shortcut-row"><span>Render diagram</span><span class="shortcut-keys"><kbd>Ctrl</kbd><kbd>Enter</kbd></span></div>
+            <div class="shortcut-row"><span>Indent / dedent</span><span class="shortcut-keys"><kbd>Tab</kbd><kbd>Shift+Tab</kbd></span></div>
+            <button id="shortcuts-close" onclick="app.showShortcuts(false)">Close</button>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Dṛśyam Application Controller
+         */
+        let _mermaidCounter = 0;
+        let _resizeTimer = null;
+
+        const app = {
+            state: {
+                zoom: null, container: null, canvas: null,
+                currentTransform: d3.zoomIdentity,
+                hasContent: false, editorOpen: false
+            },
+
+            init() {
+                mermaid.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'loose' });
+                this.state.container = d3.select("#viewer-container");
+                this.state.canvas = this.state.container.append("g");
+                this.state.zoom = d3.zoom().scaleExtent([0.01, 20]).on("zoom", (e) => {
+                    this.state.currentTransform = e.transform;
+                    this.state.canvas.attr("transform", e.transform);
+                    this.updateZoomBadge(e.transform.k);
+                });
+                this.state.container.call(this.state.zoom);
+                this.setupEventListeners();
+                this.setupEditorLivePreview();
+                this.setupResizeHandle();
+                this.setupPWA();
+                this.loadSettings();
+                this.updateLineNumbers();
+                lucide.createIcons();
+            },
+
+            updateZoomBadge(k) { document.getElementById("zoom-badge").textContent = Math.round(k * 100) + "%"; },
+            showToast(msg, type = "info") {
+                const el = document.createElement("div");
+                el.className = "toast" + (type === "error" ? " error" : "");
+                el.textContent = msg;
+                document.getElementById("toast-container").appendChild(el);
+                setTimeout(() => el.remove(), 3000);
+            },
+
+            zoomIn() { this.state.container.transition().duration(200).call(this.state.zoom.scaleBy, 1.3); },
+            zoomOut() { this.state.container.transition().duration(200).call(this.state.zoom.scaleBy, 1 / 1.3); },
+
+            toggleEditor() {
+                const panel = document.getElementById("editor-panel");
+                const handle = document.getElementById("resize-handle");
+                const btn = document.getElementById("btn-toggle-editor");
+                this.state.editorOpen = !this.state.editorOpen;
+                if (this.state.editorOpen) {
+                    const savedW = parseInt(localStorage.getItem("drishyam-editor-width")) || 340;
+                    panel.style.width = savedW + "px";
+                    handle.classList.add("visible");
+                } else {
+                    if (panel.offsetWidth > 0) localStorage.setItem("drishyam-editor-width", panel.offsetWidth);
+                    panel.style.width = "0";
+                    handle.classList.remove("visible");
+                }
+                btn.style.background = this.state.editorOpen ? "var(--accent)" : "";
+                btn.style.borderColor = this.state.editorOpen ? "var(--accent)" : "";
+                setTimeout(() => this.fitToScreen(), 320);
+            },
+
+            setupResizeHandle() {
+                const handle = document.getElementById("resize-handle");
+                const panel = document.getElementById("editor-panel");
+                let startX, startW;
+                handle.addEventListener("mousedown", e => {
+                    e.preventDefault(); startX = e.clientX; startW = panel.offsetWidth;
+                    handle.classList.add("dragging"); panel.style.transition = "none";
+                    const onMove = e => {
+                        const newW = Math.max(200, Math.min(window.innerWidth * 0.7, startW + (e.clientX - startX)));
+                        panel.style.width = newW + "px";
+                    };
+                    const onUp = () => {
+                        handle.classList.remove("dragging"); panel.style.transition = "";
+                        localStorage.setItem("drishyam-editor-width", panel.offsetWidth);
+                        document.removeEventListener("mousemove", onMove); document.removeEventListener("mouseup", onUp);
+                    };
+                    document.addEventListener("mousemove", onMove); document.addEventListener("mouseup", onUp);
+                });
+            },
+
+            async renderFromEditor() {
+                const code = document.getElementById("mmd-textarea").value.trim();
+                if (!code) return;
+                this.setEditorStatus("pending", "rendering…");
+                this.toggleLoading(true);
+                try {
+                    await this.renderMermaid(code);
+                    this.setHasContent(true); this.setEditorStatus("ok", "ok"); this.clearLint();
+                } catch (err) {
+                    this.setEditorStatus("error", "syntax error");
+                    const errors = this.parseMermaidError(err, code);
+                    this.renderLintResults(errors, code);
+                } finally { this.toggleLoading(false); }
+            },
+
+            parseMermaidError(err, code) {
+                const msg = (err && (err.message || err.str || String(err))) || "Syntax error";
+                const linePatterns = [/[Ll]ine[:\s]+(\d+)/, /at line (\d+)/, /Parse error on line (\d+)/];
+                let lineNum = null;
+                for (const pat of linePatterns) { const m = msg.match(pat); if (m) { lineNum = parseInt(m[1]) - 1; break; } }
+                return [{ line: lineNum !== null ? lineNum : 0, msg: msg.split("\n")[0] }];
+            },
+
+            renderLintResults(errors, code) {
+                const errorLineSet = new Set(errors.map(e => e.line));
+                this.updateLineNumbers(errorLineSet);
+                const panel = document.getElementById("lint-errors");
+                panel.style.display = "block";
+                panel.innerHTML = errors.map(err => `<div class="lint-item"><span class="lint-badge">ERR</span><span class="lint-line-num">L${err.line + 1}</span><span class="lint-msg">${err.msg}</span></div>`).join("");
+            },
+
+            clearLint() { this.updateLineNumbers(); document.getElementById("lint-errors").style.display = "none"; },
+
+            updateLineNumbers(errorLineSet = new Set()) {
+                const ta = document.getElementById("mmd-textarea");
+                const gutter = document.getElementById("line-number-gutter");
+                const count = (ta.value.match(/\n/g) || []).length + 1;
+                let html = "";
+                for (let i = 1; i <= count; i++) { html += `<div class="ln-item${errorLineSet.has(i - 1) ? " ln-err" : ""}">${i}</div>`; }
+                gutter.innerHTML = html;
+                gutter.scrollTop = ta.scrollTop;
+            },
+
+            updateStats() {
+                const ta = document.getElementById("mmd-textarea");
+                const val = ta.value;
+                const before = val.substring(0, ta.selectionStart);
+                const curLine = (before.match(/\n/g) || []).length + 1;
+                const curCol = before.length - before.lastIndexOf("\n");
+                const stats = document.getElementById("editor-stats");
+                if (stats) stats.textContent = `L${curLine} C${curCol} | ${val.length} ch`;
+            },
+
+            toggleWrap() {
+                const ta = document.getElementById("mmd-textarea");
+                const btn = document.getElementById("btn-wrap-toggle");
+                const nowWrap = !btn.classList.contains("active");
+                btn.classList.toggle("active", nowWrap);
+                ta.style.whiteSpace = nowWrap ? "pre-wrap" : "nowrap";
+                localStorage.setItem("drishyam-wrap", nowWrap ? "1" : "0");
+            },
+
+            adjustFontSize(delta) {
+                const ta = document.getElementById("mmd-textarea");
+                const current = parseFloat(ta.style.fontSize) || 13;
+                const next = Math.max(9, Math.min(22, current + delta));
+                ta.style.fontSize = next + "px";
+                document.getElementById("line-number-gutter").style.fontSize = next + "px";
+                localStorage.setItem("drishyam-font-size", next);
+                this.updateLineNumbers();
+            },
+
+            setupEditorLivePreview() {
+                const ta = document.getElementById("mmd-textarea");
+                const triggerDebounce = () => {
+                    this.setEditorStatus("pending", "…");
+                    clearTimeout(this._editorDebounce);
+                    this._editorDebounce = setTimeout(() => this.renderFromEditor(), 800);
+                };
+                ta.addEventListener("input", () => { this.updateLineNumbers(); this.updateStats(); triggerDebounce(); });
+                ta.addEventListener("scroll", () => { document.getElementById("line-number-gutter").scrollTop = ta.scrollTop; });
+                ta.addEventListener("click", () => this.updateStats());
+                ta.addEventListener("keyup", () => this.updateStats());
+                ta.addEventListener("keydown", e => {
+                    if (e.key === "Tab") {
+                        e.preventDefault();
+                        const s = ta.selectionStart, v = ta.value;
+                        ta.value = v.substring(0, s) + "  " + v.substring(ta.selectionEnd);
+                        ta.selectionStart = ta.selectionEnd = s + 2;
+                        triggerDebounce();
+                    }
+                    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); this.renderFromEditor(); }
+                });
+            },
+
+            setupEventListeners() {
+                const fileInput = document.getElementById("fileInput");
+                fileInput.addEventListener("change", e => { if (e.target.files[0]) this.handleFile(e.target.files[0]); e.target.value = ""; });
+                document.getElementById("bgColorPicker").addEventListener("input", e => {
+                    const c = e.target.value; document.body.style.background = c;
+                    document.getElementById("color-swatch").style.background = c;
+                    localStorage.setItem("drishyam-bg", c);
+                });
+                window.addEventListener("dragover", e => { e.preventDefault(); document.getElementById("drop-overlay").style.display = "flex"; });
+                window.addEventListener("dragleave", e => { if (e.relatedTarget === null) document.getElementById("drop-overlay").style.display = "none"; });
+                window.addEventListener("drop", e => { e.preventDefault(); document.getElementById("drop-overlay").style.display = "none"; if (e.dataTransfer.files.length) this.handleFile(e.dataTransfer.files[0]); });
+                window.addEventListener("resize", () => { clearTimeout(_resizeTimer); _resizeTimer = setTimeout(() => this.fitToScreen(), 150); });
+                window.addEventListener("keydown", e => {
+                    if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT") return;
+                    if (e.key === "f" || e.key === "F") this.fitToScreen();
+                    if (e.key === "r" || e.key === "R") this.resetZoom();
+                    if (e.key === "+" || e.key === "=") this.zoomIn();
+                    if (e.key === "-") this.zoomOut();
+                    if (e.key === "e" || e.key === "E") this.toggleEditor();
+                });
+            },
+
+            async handleFile(file) {
+                const ext = "." + file.name.split(".").pop().toLowerCase();
+                if (![".svg", ".mmd", ".mermaid", ".txt"].includes(ext)) { this.showToast(`Unsupported: ${ext}`, "error"); return; }
+                this.toggleLoading(true);
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        if (file.name.endsWith(".svg")) await this.renderSVG(e.target.result);
+                        else { await this.renderMermaid(e.target.result); document.getElementById("mmd-textarea").value = e.target.result; }
+                        this.setHasContent(true);
+                    } catch (err) { this.showToast("Error rendering diagram", "error"); }
+                    finally { this.toggleLoading(false); }
+                };
+                reader.readAsText(file);
+            },
+
+            async renderSVG(raw) {
+                const clean = DOMPurify.sanitize(raw, { USE_PROFILES: { svg: true }, ADD_TAGS: ["filter", "feGaussianBlur", "feOffset", "feComposite", "feMerge", "feMergeNode"] });
+                this.state.canvas.html(clean); this.standardizeInternalSvg();
+                requestAnimationFrame(() => this.fitToScreen());
+            },
+
+            async renderMermaid(code) {
+                const id = `mermaid-${Date.now()}-${++_mermaidCounter}`;
+                try {
+                    const { svg } = await mermaid.render(id, code);
+                    this.state.canvas.html(svg); this.standardizeInternalSvg();
+                    requestAnimationFrame(() => this.fitToScreen());
+                } catch (err) { throw new Error(); }
+            },
+
+            standardizeInternalSvg() {
+                const inner = this.state.canvas.select("svg");
+                if (!inner.empty()) {
+                    const w = inner.attr("width"), h = inner.attr("height");
+                    if (!inner.attr("viewBox") && w && h) inner.attr("viewBox", `0 0 ${w} ${h}`);
+                    inner.attr("width", null).attr("height", null);
+                }
+            },
+
+            setHasContent(v) { this.state.hasContent = v; document.getElementById("empty-state").style.display = v ? "none" : "flex"; },
+            toggleLoading(show) { document.getElementById("loader").style.display = show ? "flex" : "none"; },
+            fitToScreen() {
+                const node = this.state.canvas.node(); if (!node || !node.getBBox) return;
+                const b = node.getBBox(); if (b.width === 0) return;
+                const wrap = document.getElementById("viewer-wrap");
+                const scale = 0.85 / Math.max(b.width / wrap.clientWidth, b.height / wrap.clientHeight);
+                const t = d3.zoomIdentity.translate(wrap.clientWidth / 2 - scale * (b.x + b.width / 2), wrap.clientHeight / 2 - scale * (b.y + b.height / 2)).scale(scale);
+                this.state.container.transition().duration(750).call(this.state.zoom.transform, t);
+            },
+
+            resetZoom() { this.state.container.transition().duration(500).call(this.state.zoom.transform, d3.zoomIdentity); },
+            clearCanvas() { this.state.canvas.selectAll("*").remove(); this.setHasContent(false); },
+
+            setupPWA() {
+                if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js");
+                window.addEventListener("beforeinstallprompt", e => {
+                    e.preventDefault(); this._installPrompt = e;
+                    document.getElementById("menu-install").style.display = "flex";
+                    document.getElementById("install-divider").style.display = "block";
+                });
+                window.addEventListener("appinstalled", () => {
+                    this._installPrompt = null;
+                    document.getElementById("menu-install").style.display = "none";
+                    document.getElementById("install-divider").style.display = "none";
+                });
+            },
+
+            toggleMoreMenu() {
+                const menu = document.getElementById("more-menu");
+                const btn = document.getElementById("btn-more");
+                const isOpen = menu.classList.contains("open");
+                menu.classList.toggle("open", !isOpen);
+                if (!isOpen) {
+                    const close = e => {
+                        if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                            menu.classList.remove("open"); document.removeEventListener("click", close, true);
+                        }
+                    };
+                    setTimeout(() => document.addEventListener("click", close, true), 0);
+                }
+            },
+
+            async installPWA() {
+                if (!this._installPrompt) return;
+                this._installPrompt.prompt();
+                const { outcome } = await this._installPrompt.userChoice;
+                if (outcome === "accepted") this._installPrompt = null;
+                document.getElementById("more-menu").classList.remove("open");
+            },
+
+            exportSVG() {
+                const inner = this.state.canvas.node().innerHTML;
+                const blob = new Blob([inner], { type: "image/svg+xml" });
+                const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: "diagram.svg" });
+                a.click(); document.getElementById("more-menu").classList.remove("open");
+            },
+
+            exportPNG() {
+                const svgEl = this.state.canvas.select("svg").node();
+                const xml = new XMLSerializer().serializeToString(svgEl);
+                const img = new Image();
+                const url = URL.createObjectURL(new Blob([xml], { type: "image/svg+xml" }));
+                img.onload = () => {
+                    const canvas = document.createElement("canvas");
+                    canvas.width = img.width || 1200; canvas.height = img.height || 800;
+                    canvas.getContext("2d").drawImage(img, 0, 0);
+                    const a = Object.assign(document.createElement("a"), { href: canvas.toDataURL("image/png"), download: "diagram.png" });
+                    a.click(); URL.revokeObjectURL(url);
+                };
+                img.src = url; document.getElementById("more-menu").classList.remove("open");
+            },
+
+            showShortcuts(open = true) {
+                document.getElementById("more-menu").classList.remove("open");
+                document.getElementById("shortcuts-modal").classList.toggle("open", open);
+            },
+
+            loadSettings() {
+                const savedBg = localStorage.getItem("drishyam-bg") || "#0f172a";
+                document.body.style.background = savedBg;
+                document.getElementById("bgColorPicker").value = savedBg;
+                document.getElementById("color-swatch").style.background = savedBg;
+                const savedSize = parseInt(localStorage.getItem("drishyam-font-size")) || 13;
+                if (savedSize !== 13) {
+                    document.getElementById("mmd-textarea").style.fontSize = savedSize + "px";
+                    document.getElementById("line-number-gutter").style.fontSize = savedSize + "px";
+                }
+                if (localStorage.getItem("drishyam-wrap") === "1") this.toggleWrap();
+            }
+        };
+
+        app.init();
+    </script>
+</body>
+
+</html>
