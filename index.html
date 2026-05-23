@@ -7,15 +7,18 @@
     <title>Dṛśyam | SVG & Mermaid Diagram Viewer</title>
 
     <!-- SEO -->
-    <meta name="description" content="Dṛśyam — a beautiful SVG and Mermaid diagram viewer with pan, zoom, and export. Drop any diagram file and explore it instantly." />
-    <meta name="keywords" content="SVG viewer, Mermaid diagram, diagram viewer, architecture diagram, flowchart, D3 zoom" />
+    <meta name="description"
+        content="Dṛśyam — a beautiful SVG and Mermaid diagram viewer with pan, zoom, and export. Drop any diagram file and explore it instantly." />
+    <meta name="keywords"
+        content="SVG viewer, Mermaid diagram, diagram viewer, architecture diagram, flowchart, D3 zoom" />
     <meta name="author" content="Dṛśyam" />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://swas02.github.io/Drishyam/" />
 
     <!-- Open Graph -->
     <meta property="og:title" content="Dṛśyam | SVG & Mermaid Diagram Viewer" />
-    <meta property="og:description" content="Drop any SVG or Mermaid file and explore it with smooth pan, zoom, and export." />
+    <meta property="og:description"
+        content="Drop any SVG or Mermaid file and explore it with smooth pan, zoom, and export." />
     <meta property="og:url" content="https://swas02.github.io/Drishyam/" />
     <meta property="og:image" content="https://swas02.github.io/Drishyam/og-image.png" />
     <meta property="og:image:width" content="1200" />
@@ -26,7 +29,8 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Dṛśyam | SVG & Mermaid Diagram Viewer" />
-    <meta name="twitter:description" content="Drop any SVG or Mermaid file and explore it with smooth pan, zoom, and export." />
+    <meta name="twitter:description"
+        content="Drop any SVG or Mermaid file and explore it with smooth pan, zoom, and export." />
     <meta name="twitter:image" content="https://swas02.github.io/Drishyam/og-image.png" />
 
     <!-- PWA -->
@@ -124,6 +128,7 @@
             position: relative;
             pointer-events: auto;
         }
+
         #more-menu {
             display: none;
             position: absolute;
@@ -135,7 +140,11 @@
             flex-direction: column;
             gap: 2px;
         }
-        #more-menu.open { display: flex; }
+
+        #more-menu.open {
+            display: flex;
+        }
+
         .menu-item {
             display: flex;
             align-items: center;
@@ -151,9 +160,23 @@
             text-align: left;
             transition: background 0.15s;
         }
-        .menu-item:hover { background: rgba(255, 255, 255, 0.08); }
-        .menu-icon { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.7; }
-        .menu-divider { height: 1px; background: var(--border); margin: 6px 0; }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .menu-icon {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+            opacity: 0.7;
+        }
+
+        .menu-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 6px 0;
+        }
 
         /* --- Split Layout --- */
         #app-layout {
@@ -188,12 +211,19 @@
             flex-shrink: 0;
             background: var(--border);
             cursor: col-resize;
-            transition: width 0.3s cubic-bezier(0.4,0,0.2,1), background 0.15s;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.15s;
             position: relative;
             z-index: 95;
         }
-        #resize-handle.visible { width: 5px; }
-        #resize-handle:hover, #resize-handle.dragging { background: var(--accent); }
+
+        #resize-handle.visible {
+            width: 5px;
+        }
+
+        #resize-handle:hover,
+        #resize-handle.dragging {
+            background: var(--accent);
+        }
 
         /* --- Status/Feedback --- */
         #drop-overlay {
@@ -226,7 +256,11 @@
             height: 18px;
         }
 
-        @keyframes rotate { 100% { transform: rotate(360deg); } }
+        @keyframes rotate {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
 
         /* --- Editor Panel --- */
         #editor-panel {
@@ -250,6 +284,7 @@
             border-bottom: 1px solid var(--border);
             flex-shrink: 0;
         }
+
         #editor-header span {
             font-size: 13px;
             font-weight: 600;
@@ -258,6 +293,7 @@
             opacity: 0.7;
             text-transform: uppercase;
         }
+
         #editor-status {
             font-size: 11px;
             font-weight: 500;
@@ -268,8 +304,18 @@
             border: 1px solid rgba(34, 197, 94, 0.2);
             transition: all 0.2s;
         }
-        #editor-status.error { background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.2); }
-        #editor-status.pending { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border-color: rgba(251, 191, 36, 0.2); }
+
+        #editor-status.error {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        #editor-status.pending {
+            background: rgba(251, 191, 36, 0.15);
+            color: #fbbf24;
+            border-color: rgba(251, 191, 36, 0.2);
+        }
 
         #mmd-textarea {
             flex: 1;
@@ -285,10 +331,23 @@
             tab-size: 2;
             overflow-y: auto;
         }
-        #mmd-textarea::placeholder { color: rgba(255,255,255,0.2); }
-        #mmd-textarea::-webkit-scrollbar { width: 4px; }
-        #mmd-textarea::-webkit-scrollbar-track { background: transparent; }
-        #mmd-textarea::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+        #mmd-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        #mmd-textarea::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #mmd-textarea::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        #mmd-textarea::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
 
         #editor-footer {
             padding: 10px 16px;
@@ -298,7 +357,12 @@
             gap: 8px;
             flex-shrink: 0;
         }
-        #editor-footer-btns { display: flex; gap: 8px; }
+
+        #editor-footer-btns {
+            display: flex;
+            gap: 8px;
+        }
+
         #btn-render {
             flex: 1;
             background: var(--accent);
@@ -311,9 +375,13 @@
             font-weight: 500;
             transition: background 0.2s;
         }
-        #btn-render:hover { background: var(--accent-hover); }
+
+        #btn-render:hover {
+            background: var(--accent-hover);
+        }
+
         #btn-clear {
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border);
             color: var(--text-main);
             padding: 8px 12px;
@@ -322,43 +390,245 @@
             font-size: 13px;
             transition: background 0.2s;
         }
-        #btn-clear:hover { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.3); color: #f87171; }
+
+        #btn-clear:hover {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #f87171;
+        }
 
         /* --- Line Numbers & Lint --- */
-        #editor-body { flex:1; display:flex; flex-direction:column; overflow:hidden; }
-        #editor-code-wrap { flex:1; display:flex; overflow:hidden; min-height:0; }
-        #line-number-gutter { width:44px; flex-shrink:0; background:rgba(0,0,0,0.25); border-right:1px solid var(--border); overflow:hidden; user-select:none; font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.7; padding-top:16px; padding-bottom:16px; color:rgba(255,255,255,0.2); text-align:right; }
-        .ln-item { padding:0 8px 0 4px; }
-        .ln-item.ln-err { color:#f87171; background:rgba(239,68,68,0.1); border-right:2px solid rgba(239,68,68,0.4); padding-right:6px; }
-        #lint-errors { flex-shrink:0; max-height:140px; overflow-y:auto; border-top:1px solid var(--border); border-bottom:1px solid var(--border); background:rgba(0,0,0,0.3); display:none; }
+        #editor-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #editor-code-wrap {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        #line-number-gutter {
+            width: 44px;
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.25);
+            border-right: 1px solid var(--border);
+            overflow: hidden;
+            user-select: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            padding-top: 16px;
+            padding-bottom: 16px;
+            color: rgba(255, 255, 255, 0.2);
+            text-align: right;
+        }
+
+        .ln-item {
+            padding: 0 8px 0 4px;
+        }
+
+        .ln-item.ln-err {
+            color: #f87171;
+            background: rgba(239, 68, 68, 0.1);
+            border-right: 2px solid rgba(239, 68, 68, 0.4);
+            padding-right: 6px;
+        }
+
+        #lint-errors {
+            flex-shrink: 0;
+            max-height: 140px;
+            overflow-y: auto;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.3);
+            display: none;
+        }
 
         /* --- Extras --- */
-        * { box-sizing: border-box; }
-        .btn:active { transform: scale(0.95); }
-        #zoom-badge { font-size: 12px; font-weight: 600; color: var(--text-main); min-width: 44px; text-align: center; opacity: 0.8; letter-spacing: 0.02em; }
-        #empty-state { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; pointer-events: none; color: rgba(255,255,255,0.25); user-select: none; }
-        #empty-state svg { opacity: 0.2; }
-        #empty-state h2 { margin: 0; font-size: 18px; font-weight: 500; }
-        #empty-state p { margin: 0; font-size: 13px; }
-        #empty-state kbd { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 4px; padding: 1px 6px; font-size: 11px; font-family: monospace; }
-        #toast-container { position: fixed; bottom: 80px; right: 24px; display: flex; flex-direction: column; gap: 8px; z-index: 9999; pointer-events: none; }
-        .toast { background: rgba(30,41,59,0.95); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; font-size: 13px; color: var(--text-main); backdrop-filter: blur(12px); animation: slideIn 0.2s ease; box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
-        .toast.error { border-color: #ef4444; color: #fca5a5; }
-        @keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
-        #logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
-        #logo-wordmark { font-size: 14px; font-weight: 600; color: var(--text-main); letter-spacing: 0.04em; white-space: nowrap; }
+        * {
+            box-sizing: border-box;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        #zoom-badge {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-main);
+            min-width: 44px;
+            text-align: center;
+            opacity: 0.8;
+            letter-spacing: 0.02em;
+        }
+
+        #empty-state {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            pointer-events: none;
+            color: rgba(255, 255, 255, 0.25);
+            user-select: none;
+        }
+
+        #empty-state svg {
+            opacity: 0.2;
+        }
+
+        #empty-state h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        #empty-state p {
+            margin: 0;
+            font-size: 13px;
+        }
+
+        #empty-state kbd {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 4px;
+            padding: 1px 6px;
+            font-size: 11px;
+            font-family: monospace;
+        }
+
+        #toast-container {
+            position: fixed;
+            bottom: 80px;
+            right: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 13px;
+            color: var(--text-main);
+            backdrop-filter: blur(12px);
+            animation: slideIn 0.2s ease;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .toast.error {
+            border-color: #ef4444;
+            color: #fca5a5;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        #logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        #logo-wordmark {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+        }
 
         /* --- Shortcuts Modal --- */
-        #shortcuts-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 300; align-items: center; justify-content: center; }
-        #shortcuts-modal.open { display: flex; }
-        #shortcuts-box { background: #1e293b; border: 1px solid var(--border); border-radius: 14px; padding: 24px; min-width: 320px; box-shadow: 0 24px 64px rgba(0,0,0,0.6); }
-        #shortcuts-box h3 { margin: 0 0 16px; font-size: 15px; font-weight: 600; }
-        .shortcut-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; color: rgba(255,255,255,0.7); }
-        .shortcut-row:last-child { border-bottom: none; }
-        .shortcut-keys kbd { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; padding: 2px 7px; font-size: 11px; font-family: monospace; color: var(--text-main); }
-        #shortcuts-close { margin-top: 16px; width: 100%; padding: 8px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text-main); border-radius: 8px; cursor: pointer; font-size: 13px; }
-        #shortcuts-close:hover { background: rgba(255,255,255,0.1); }
+        #shortcuts-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 300;
+            align-items: center;
+            justify-content: center;
+        }
 
+        #shortcuts-modal.open {
+            display: flex;
+        }
+
+        #shortcuts-box {
+            background: #1e293b;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px;
+            min-width: 320px;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+        }
+
+        #shortcuts-box h3 {
+            margin: 0 0 16px;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .shortcut-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .shortcut-row:last-child {
+            border-bottom: none;
+        }
+
+        .shortcut-keys kbd {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+            padding: 2px 7px;
+            font-size: 11px;
+            font-family: monospace;
+            color: var(--text-main);
+        }
+
+        #shortcuts-close {
+            margin-top: 16px;
+            width: 100%;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        #shortcuts-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
     </style>
 </head>
 
@@ -399,8 +669,10 @@
 
             <div class="divider"></div>
 
-            <button class="btn" id="btn-bg-color" onclick="document.getElementById('bgColorPicker').click()" title="Change Background Color" style="padding:6px 8px;gap:6px;font-size:12px;font-weight:500;">
-                <span id="color-swatch" style="width:14px;height:14px;border-radius:3px;border:1px solid rgba(255,255,255,0.25);flex-shrink:0;"></span>
+            <button class="btn" id="btn-bg-color" onclick="document.getElementById('bgColorPicker').click()"
+                title="Change Background Color" style="padding:6px 8px;gap:6px;font-size:12px;font-weight:500;">
+                <span id="color-swatch"
+                    style="width:14px;height:14px;border-radius:3px;border:1px solid rgba(255,255,255,0.25);flex-shrink:0;"></span>
                 BG
             </button>
             <input type="color" id="bgColorPicker" hidden />
@@ -410,8 +682,11 @@
             <!-- Consolidated More Menu (Only entry for non-viewing actions) -->
             <div id="more-wrap">
                 <button class="btn" id="btn-more" onclick="app.toggleMoreMenu()" title="More options">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="19" r="1.5"/>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="1.5" />
+                        <circle cx="12" cy="5" r="1.5" />
+                        <circle cx="12" cy="19" r="1.5" />
                     </svg>
                 </button>
                 <div id="more-menu" class="glass-panel">
@@ -434,9 +709,11 @@
                         <i data-lucide="keyboard" class="menu-icon"></i> Keyboard Shortcuts
                     </button>
                     <div class="menu-divider"></div>
-                    <a href="https://github.com/swas02/Drishyam" target="_blank" class="menu-item" style="text-decoration:none;">
+                    <a href="https://github.com/swas02/Drishyam" target="_blank" class="menu-item"
+                        style="text-decoration:none;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="menu-icon">
-                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            <path
+                                d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
                         </svg>
                         View Source
                     </a>
@@ -492,10 +769,12 @@
             <svg id="viewer-container"></svg>
             <div id="empty-state">
                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
-                    <rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 10h8M8 14h5"/>
+                    <rect x="2" y="3" width="20" height="18" rx="2" />
+                    <path d="M8 10h8M8 14h5" />
                 </svg>
                 <h2>Drop a diagram here</h2>
-                <p>Supports <strong>.svg</strong>, <strong>.mmd</strong>, <strong>.mermaid</strong>, <strong>.txt</strong></p>
+                <p>Supports <strong>.svg</strong>, <strong>.mmd</strong>, <strong>.mermaid</strong>,
+                    <strong>.txt</strong></p>
                 <p style="margin-top:4px;font-size:12px;">
                     <kbd>F</kbd> fit &nbsp; <kbd>R</kbd> reset &nbsp; <kbd>+</kbd>/<kbd>-</kbd> zoom
                 </p>
@@ -516,10 +795,13 @@
             <h3>Keyboard Shortcuts</h3>
             <div class="shortcut-row"><span>Fit to screen</span><span class="shortcut-keys"><kbd>F</kbd></span></div>
             <div class="shortcut-row"><span>Reset zoom</span><span class="shortcut-keys"><kbd>R</kbd></span></div>
-            <div class="shortcut-row"><span>Zoom in / out</span><span class="shortcut-keys"><kbd>+</kbd><kbd>-</kbd></span></div>
+            <div class="shortcut-row"><span>Zoom in / out</span><span
+                    class="shortcut-keys"><kbd>+</kbd><kbd>-</kbd></span></div>
             <div class="shortcut-row"><span>Toggle editor</span><span class="shortcut-keys"><kbd>E</kbd></span></div>
-            <div class="shortcut-row"><span>Render diagram</span><span class="shortcut-keys"><kbd>Ctrl</kbd><kbd>Enter</kbd></span></div>
-            <div class="shortcut-row"><span>Indent / dedent</span><span class="shortcut-keys"><kbd>Tab</kbd><kbd>Shift+Tab</kbd></span></div>
+            <div class="shortcut-row"><span>Render diagram</span><span
+                    class="shortcut-keys"><kbd>Ctrl</kbd><kbd>Enter</kbd></span></div>
+            <div class="shortcut-row"><span>Indent / dedent</span><span
+                    class="shortcut-keys"><kbd>Tab</kbd><kbd>Shift+Tab</kbd></span></div>
             <button id="shortcuts-close" onclick="app.showShortcuts(false)">Close</button>
         </div>
     </div>
