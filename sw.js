@@ -1,4 +1,4 @@
-const VERSION = "26.5.1";
+const VERSION = "26.5.2";
 const CACHE_NAME = `drishyam-cache-v${VERSION}`;
 
 const ASSETS = [

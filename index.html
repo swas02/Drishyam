@@ -124,21 +124,15 @@
         }
 
         /* --- More Menu --- */
-        #more-wrap {
-            position: relative;
-            pointer-events: auto;
-        }
-
         #more-menu {
             display: none;
-            position: absolute;
-            top: calc(100% + 12px);
-            right: 0;
+            position: fixed;
             min-width: 200px;
             padding: 6px;
-            z-index: 200;
+            z-index: 500;
             flex-direction: column;
             gap: 2px;
+            pointer-events: auto;
         }
 
         #more-menu.open {
@@ -680,6 +674,162 @@
         #shortcuts-close:hover {
             background: rgba(255, 255, 255, 0.1);
         }
+
+        /* ============================================================
+           RESPONSIVE — Mobile-first overrides
+           ============================================================ */
+
+        /* Mobile-only menu items hidden by default on desktop */
+        .mobile-only-item { display: none; }
+
+        /* --- Toolbar: scrollable on small screens --- */
+        @media (max-width: 640px) {
+            /* Hide toolbar buttons that move into the more-menu */
+            .toolbar-hide-mobile { display: none !important; }
+
+            /* Show the mobile-only more-menu items */
+            .mobile-only-item { display: flex; }
+            #toolbar {
+                left: 8px;
+                right: 8px;
+                top: 10px;
+                transform: none;
+                width: auto;
+                overflow-x: auto;
+                overflow-y: hidden;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                gap: 8px;
+                padding: 6px 10px;
+                border-radius: 10px;
+                /* keep it from growing taller when items can't shrink */
+                flex-wrap: nowrap;
+            }
+
+            #toolbar::-webkit-scrollbar { display: none; }
+
+            /* Slightly smaller buttons on mobile */
+            .btn { padding: 7px; }
+
+            /* Hide logo wordmark to save space */
+            #logo-wordmark { display: none; }
+
+            /* Tighter dividers */
+            .divider { margin: 0 1px; }
+
+            /* Zoom badge narrower */
+            #zoom-badge { min-width: 36px; font-size: 11px; }
+
+            /* Toast shouldn't overlap toolbar */
+            #toast-container {
+                bottom: auto;
+                top: 70px;
+                right: 12px;
+                left: 12px;
+                align-items: flex-end;
+            }
+
+            /* Loader anchored bottom-left away from more-menu */
+            #loader { bottom: 16px; right: 16px; padding: 10px 14px; }
+
+            /* Shortcuts modal box full-width */
+            #shortcuts-box {
+                min-width: unset;
+                width: calc(100vw - 40px);
+                max-width: 400px;
+                padding: 18px;
+            }
+
+            /* Drop overlay text */
+            #drop-overlay h2 { font-size: 18px; }
+        }
+
+        /* --- Editor panel: bottom sheet on mobile --- */
+        @media (max-width: 768px) {
+            #app-layout {
+                flex-direction: column;
+            }
+
+            /* Viewer fills the screen */
+            #viewer-wrap {
+                flex: 1;
+                min-height: 0;
+                height: 100%;
+                width: 100%;
+            }
+
+            /* Resize handle becomes a top drag bar when editor is open */
+            #resize-handle {
+                display: none; /* hidden — we use touch-based toggle instead */
+            }
+
+            /* Editor becomes a bottom sheet */
+            #editor-panel {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100% !important;   /* override JS-set width */
+                height: 0;
+                border-right: none;
+                border-top: 1px solid var(--border);
+                border-radius: 14px 14px 0 0;
+                transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 90;
+            }
+
+            /* When JS sets width on the panel (editorOpen), we use height instead */
+            #editor-panel.mobile-open {
+                height: 55vh;
+                width: 100% !important;
+            }
+
+            /* Keep editor content visible */
+            #editor-panel.mobile-open #editor-header,
+            #editor-panel.mobile-open #editor-body,
+            #editor-panel.mobile-open #editor-footer,
+            #editor-panel.mobile-open #lint-errors {
+                display: flex;
+            }
+
+            /* Drag handle pill at top of bottom sheet */
+            #editor-panel::before {
+                content: '';
+                display: block;
+                width: 36px;
+                height: 4px;
+                border-radius: 2px;
+                background: var(--border);
+                margin: 8px auto 0;
+                flex-shrink: 0;
+            }
+
+            #toolbar {
+                top: 10px;
+                left: 8px;
+                right: 8px;
+                width: auto;
+                justify-content: space-between;
+            }
+
+            /* More menu: cap width so it never overflows the screen */
+            #more-menu {
+                max-width: calc(100vw - 24px);
+            }
+
+            /* Backdrop behind the bottom sheet */
+            #editor-backdrop {
+                display: block;
+            }
+        }
+
+        #editor-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 89;
+        }
     </style>
 </head>
 
@@ -693,7 +843,7 @@
                 <span id="logo-wordmark">Dṛśyam</span>
             </a>
 
-            <div class="divider"></div>
+            <div class="divider toolbar-hide-mobile"></div>
 
             <button class="btn" id="btn-toggle-editor" onclick="app.toggleEditor()" title="Toggle MMD Editor (E)">
                 <i data-lucide="code-2"></i>
@@ -701,26 +851,26 @@
 
             <div class="divider"></div>
 
-            <button class="btn" onclick="app.zoomOut()" title="Zoom Out (-)">
+            <button class="btn" id="btn-zoom-out" onclick="app.zoomOut()" title="Zoom Out (-)">
                 <i data-lucide="minus"></i>
             </button>
             <span id="zoom-badge">100%</span>
-            <button class="btn" onclick="app.zoomIn()" title="Zoom In (+)">
+            <button class="btn" id="btn-zoom-in" onclick="app.zoomIn()" title="Zoom In (+)">
                 <i data-lucide="plus"></i>
             </button>
 
-            <div class="divider"></div>
+            <div class="divider toolbar-hide-mobile"></div>
 
-            <button class="btn" onclick="app.resetZoom()" title="Reset Zoom (R)">
+            <button class="btn toolbar-hide-mobile" id="btn-reset-zoom" onclick="app.resetZoom()" title="Reset Zoom (R)">
                 <i data-lucide="refresh-cw"></i>
             </button>
-            <button class="btn" onclick="app.fitToScreen()" title="Fit to Screen (F)">
+            <button class="btn toolbar-hide-mobile" id="btn-fit" onclick="app.fitToScreen()" title="Fit to Screen (F)">
                 <i data-lucide="maximize"></i>
             </button>
 
-            <div class="divider"></div>
+            <div class="divider toolbar-hide-mobile"></div>
 
-            <button class="btn" id="btn-bg-color" onclick="document.getElementById('bgColorPicker').click()"
+            <button class="btn toolbar-hide-mobile" id="btn-bg-color" onclick="document.getElementById('bgColorPicker').click()"
                 title="Change Background Color" style="padding:6px 8px;gap:6px;font-size:12px;font-weight:500;">
                 <span id="color-swatch"
                     style="width:14px;height:14px;border-radius:3px;border:1px solid rgba(255,255,255,0.25);flex-shrink:0;"></span>
@@ -728,57 +878,62 @@
             </button>
             <input type="color" id="bgColorPicker" hidden />
 
-            <div class="divider"></div>
+            <div class="divider toolbar-hide-mobile"></div>
 
-            <!-- Consolidated More Menu (Only entry for non-viewing actions) -->
-            <div id="more-wrap">
-                <button class="btn" id="btn-more" onclick="app.toggleMoreMenu()" title="More options">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="1.5" />
-                        <circle cx="12" cy="5" r="1.5" />
-                        <circle cx="12" cy="19" r="1.5" />
-                    </svg>
-                </button>
-                <div id="more-menu" class="glass-panel">
-                    <button class="menu-item" onclick="document.getElementById('fileInput').click()">
-                        <i data-lucide="upload-cloud" class="menu-icon"></i> Open File
-                    </button>
-                    <div class="menu-divider"></div>
-                    <button class="menu-item" id="menu-install" style="display:none" onclick="app.installPWA()">
-                        <i data-lucide="download" class="menu-icon"></i> Install as App
-                    </button>
-                    <div class="menu-divider" id="install-divider" style="display:none"></div>
-                    <!-- <button class="menu-item" onclick="app.exportSVG()">
-                        <i data-lucide="file-output" class="menu-icon"></i> Export as SVG
-                    </button>
-                    <button class="menu-item" onclick="app.exportPNG()">
-                        <i data-lucide="image" class="menu-icon"></i> Export as PNG
-                    </button> -->
-                    <!-- <div class="menu-divider"></div> -->
-                    <button class="menu-item" onclick="app.showShortcuts()">
-                        <i data-lucide="keyboard" class="menu-icon"></i> Keyboard Shortcuts
-                    </button>
-                    <div class="menu-divider"></div>
-                    <button class="menu-item" id="menu-update" style="display:none;color:var(--accent);" onclick="app.applyUpdate()">
-                        <i data-lucide="sparkles" class="menu-icon" style="color:var(--accent);opacity:1;"></i> Update Available!
-                    </button>
-                    <button class="menu-item" onclick="app.checkForUpdates(event)">
-                        <i data-lucide="refresh-cw" class="menu-icon"></i> Check for Updates
-                    </button>
-                    <div class="menu-divider"></div>
-                    <button class="menu-item" onclick="app.clearCanvas()" style="color:#f87171;">
-                        <i data-lucide="trash-2" class="menu-icon" style="color:#f87171;opacity:1;"></i> Clear Canvas
-                    </button>
-                    <div class="menu-divider"></div>
-                    <div style="padding: 4px 12px; font-size: 10px; opacity: 0.4; display: flex; justify-content: space-between; align-items: center;">
-                        <span id="app-version">v...</span>
-                        <a href="https://github.com/swas02/Drishyam/releases" target="_blank" style="color: inherit; text-decoration: none;">Changelog</a>
-                    </div>
-                </div>
-            </div>
+            <!-- More button — menu is rendered outside toolbar to avoid overflow clipping -->
+            <button class="btn" id="btn-more" onclick="app.toggleMoreMenu()" title="More options">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="1.5" />
+                    <circle cx="12" cy="5" r="1.5" />
+                    <circle cx="12" cy="19" r="1.5" />
+                </svg>
+            </button>
             <input type="file" id="fileInput" accept=".svg,.mmd,.mermaid,.txt" hidden />
 
+        </div>
+
+        <!-- More menu lives here, outside #toolbar, so it's never clipped by overflow -->
+        <div id="more-menu" class="glass-panel">
+            <button class="menu-item" onclick="document.getElementById('fileInput').click()">
+                <i data-lucide="upload-cloud" class="menu-icon"></i> Open File
+            </button>
+            <!-- Mobile-only toolbar actions -->
+            <div class="menu-divider mobile-only-item"></div>
+            <button class="menu-item mobile-only-item" onclick="app.fitToScreen();app.toggleMoreMenu()">
+                <i data-lucide="maximize" class="menu-icon"></i> Fit to Screen
+            </button>
+            <button class="menu-item mobile-only-item" onclick="app.resetZoom();app.toggleMoreMenu()">
+                <i data-lucide="refresh-cw" class="menu-icon"></i> Reset Zoom
+            </button>
+            <button class="menu-item mobile-only-item" onclick="document.getElementById('bgColorPicker').click();app.toggleMoreMenu()" style="gap:10px;">
+                <span id="color-swatch-menu" style="width:16px;height:16px;border-radius:3px;border:1px solid rgba(255,255,255,0.25);flex-shrink:0;"></span> Background Color
+            </button>
+            <!-- end mobile-only -->
+            <div class="menu-divider"></div>
+            <button class="menu-item" id="menu-install" style="display:none" onclick="app.installPWA()">
+                <i data-lucide="download" class="menu-icon"></i> Install as App
+            </button>
+            <div class="menu-divider" id="install-divider" style="display:none"></div>
+            <button class="menu-item" onclick="app.showShortcuts()">
+                <i data-lucide="keyboard" class="menu-icon"></i> Keyboard Shortcuts
+            </button>
+            <div class="menu-divider"></div>
+            <button class="menu-item" id="menu-update" style="display:none;color:var(--accent);" onclick="app.applyUpdate()">
+                <i data-lucide="sparkles" class="menu-icon" style="color:var(--accent);opacity:1;"></i> Update Available!
+            </button>
+            <button class="menu-item" onclick="app.checkForUpdates(event)">
+                <i data-lucide="refresh-cw" class="menu-icon"></i> Check for Updates
+            </button>
+            <div class="menu-divider"></div>
+            <button class="menu-item" onclick="app.clearCanvas()" style="color:#f87171;">
+                <i data-lucide="trash-2" class="menu-icon" style="color:#f87171;opacity:1;"></i> Clear Canvas
+            </button>
+            <div class="menu-divider"></div>
+            <div style="padding: 4px 12px; font-size: 10px; opacity: 0.4; display: flex; justify-content: space-between; align-items: center;">
+                <span id="app-version">v...</span>
+                <a href="https://github.com/swas02/Drishyam/releases" target="_blank" style="color: inherit; text-decoration: none;">Changelog</a>
+            </div>
         </div>
 
         <div id="loader" class="glass-panel">
@@ -824,6 +979,9 @@
                 <div id="editor-footer-btns">
                     <button id="btn-render" onclick="app.renderFromEditor()">▶ Render</button>
                     <button id="btn-clear" onclick="app.clearEditor()">Clear</button>
+                    <button id="btn-download-mmd" class="editor-btn" onclick="app.downloadMMD()" title="Download as .mmd file" style="opacity:1;border:1px solid var(--border);padding:6px 10px;border-radius:6px;display:flex;align-items:center;gap:5px;font-size:12px;font-weight:500;white-space:nowrap;">
+                        <i data-lucide="download" style="width:13px;height:13px;"></i> .mmd
+                    </button>
                 </div>
             </div>
         </div>
@@ -839,12 +997,14 @@
                 <h2>Drop a diagram here</h2>
                 <p>Supports <strong>.svg</strong>, <strong>.mmd</strong>, <strong>.mermaid</strong>,
                     <strong>.txt</strong></p>
-                <p style="margin-top:4px;font-size:12px;">
+                <p id="empty-hint" style="margin-top:4px;font-size:12px;">
                     <kbd>F</kbd> fit &nbsp; <kbd>R</kbd> reset &nbsp; <kbd>+</kbd>/<kbd>-</kbd> zoom
                 </p>
             </div>
         </div>
     </div>
+
+    <div id="editor-backdrop" onclick="app.toggleEditor()"></div>
 
     <div id="drop-overlay">
         <h2 style="color: var(--accent)">Drop to Import</h2>
@@ -906,6 +1066,28 @@
                 this.loadSettings();
                 this.updateLineNumbers();
                 lucide.createIcons();
+                if (window.matchMedia("(pointer: coarse)").matches) {
+                    const hint = document.getElementById("empty-hint");
+                    if (hint) hint.textContent = "Tap ⋮ to open a file";
+                }
+                // Normalise editor state when crossing the mobile/desktop breakpoint
+                window.addEventListener("resize", () => {
+                    const panel = document.getElementById("editor-panel");
+                    const handle = document.getElementById("resize-handle");
+                    if (!this.state.editorOpen) return;
+                    if (window.innerWidth <= 768) {
+                        panel.style.width = "";
+                        panel.classList.add("mobile-open");
+                        handle.classList.remove("visible");
+                        document.getElementById("editor-backdrop").style.display = "block";
+                    } else {
+                        panel.classList.remove("mobile-open");
+                        document.getElementById("editor-backdrop").style.display = "none";
+                        const savedW = parseInt(localStorage.getItem("drishyam-editor-width")) || 340;
+                        panel.style.width = savedW + "px";
+                        handle.classList.add("visible");
+                    }
+                });
             },
 
             updateZoomBadge(k) { document.getElementById("zoom-badge").textContent = Math.round(k * 100) + "%"; },
@@ -928,15 +1110,24 @@
                 const panel = document.getElementById("editor-panel");
                 const handle = document.getElementById("resize-handle");
                 const btn = document.getElementById("btn-toggle-editor");
+                const backdrop = document.getElementById("editor-backdrop");
                 this.state.editorOpen = !this.state.editorOpen;
-                if (this.state.editorOpen) {
-                    const savedW = parseInt(localStorage.getItem("drishyam-editor-width")) || 340;
-                    panel.style.width = savedW + "px";
-                    handle.classList.add("visible");
+                const isMobile = window.innerWidth <= 768;
+                if (isMobile) {
+                    panel.style.width = "";
+                    panel.classList.toggle("mobile-open", this.state.editorOpen);
+                    backdrop.style.display = this.state.editorOpen ? "block" : "none";
                 } else {
-                    if (panel.offsetWidth > 0) localStorage.setItem("drishyam-editor-width", panel.offsetWidth);
-                    panel.style.width = "0";
-                    handle.classList.remove("visible");
+                    panel.classList.remove("mobile-open");
+                    if (this.state.editorOpen) {
+                        const savedW = parseInt(localStorage.getItem("drishyam-editor-width")) || 340;
+                        panel.style.width = savedW + "px";
+                        handle.classList.add("visible");
+                    } else {
+                        if (panel.offsetWidth > 0) localStorage.setItem("drishyam-editor-width", panel.offsetWidth);
+                        panel.style.width = "0";
+                        handle.classList.remove("visible");
+                    }
                 }
                 btn.style.background = this.state.editorOpen ? "var(--accent)" : "";
                 btn.style.borderColor = this.state.editorOpen ? "var(--accent)" : "";
@@ -1067,6 +1258,8 @@
 
                 document.getElementById("bgColorPicker").value = color;
                 document.getElementById("color-swatch").style.background = color;
+                const menuSwatch = document.getElementById("color-swatch-menu");
+                if (menuSwatch) menuSwatch.style.background = color;
                 localStorage.setItem("drishyam-bg", color);
 
                 if (this.state.hasContent) this.standardizeInternalSvg();
@@ -1192,6 +1385,19 @@
                 this.setEditorStatus("ok", "cleared");
             },
 
+            downloadMMD() {
+                const code = document.getElementById("mmd-textarea").value;
+                if (!code.trim()) { this.showToast("Editor is empty", "error"); return; }
+                const blob = new Blob([code], { type: "text/plain" });
+                const a = Object.assign(document.createElement("a"), {
+                    href: URL.createObjectURL(blob),
+                    download: "diagram.mmd"
+                });
+                a.click();
+                URL.revokeObjectURL(a.href);
+                this.showToast("Downloaded diagram.mmd");
+            },
+
             setupPWA() {
                 if (!("serviceWorker" in navigator)) return;
                 
@@ -1254,7 +1460,7 @@
                 this.showToast("Update available! Check the menu.", "info");
             },
 
-            async checkForUpdates() {
+            async checkForUpdates(event) {
                 if (!this._swRegistration) {
                     this.showToast("PWA not registered", "error");
                     return;
@@ -1288,6 +1494,11 @@
                 const menu = document.getElementById("more-menu");
                 const btn = document.getElementById("btn-more");
                 const isOpen = menu.classList.contains("open");
+                if (!isOpen) {
+                    const rect = btn.getBoundingClientRect();
+                    menu.style.top = (rect.bottom + 8) + "px";
+                    menu.style.right = (window.innerWidth - rect.right) + "px";
+                }
                 menu.classList.toggle("open", !isOpen);
                 if (!isOpen) {
                     const close = e => {
